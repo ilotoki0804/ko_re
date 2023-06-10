@@ -4,8 +4,8 @@ with open('README.md', 'r', encoding='utf-8') as f:
     long_description = f.read()
 
 setup(
-    name='ko_re',
-    version='0.0.1',
+    name='korean_regex',
+    version='0.0.3',
     description='regex for Korean - Being free from ord/chr in Hangeul analysis.',
     author='ilotoki0804',
     author_email='ilotoki0804@gmail.com',
@@ -26,10 +26,9 @@ setup(
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
         'Programming Language :: Python :: 3.11',
-        'TOPIC :: SOFTWARE DEVELOPMENT :: LOCALIZATION',
-        'TOPIC :: TEXT PROCESSING',
-        'TOPIC :: TEXT PROCESSING :: LINGUISTIC',
-        'INTENDED AUDIENCE :: RELIGION',
-        'NATURAL LANGUAGE :: KOREAN'
+        'Topic :: Software Development :: Localization',
+        'Topic :: Text Processing',
+        'Topic :: Text Processing :: Linguistic',
+        'Natural Language :: Korean'
     ],
 )
