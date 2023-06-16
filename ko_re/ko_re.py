@@ -2,6 +2,7 @@
 
 ADD 
 TODO: 주석이나 re.X 고려하기
+TODO: change_order 대신 flag로 변경하기
 
 unicode order: 
 ㄱㄲㄳㄴㄵㄶㄷㄸㄹㄺㄻㄼㄽㄾㄿㅀㅁㅂㅃㅄㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎㅏㅐㅑㅒㅓㅔㅕㅖㅗㅘㅙㅚㅛㅜㅝㅞㅟㅠㅡㅢㅣ
@@ -44,32 +45,38 @@ unicode order:
 import re
 
 CHOSUNG = 'ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ' 
-CHOSUNG_WITH_ZERO = '0ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ'
 JUNGSUNG = 'ㅏㅐㅑㅒㅓㅔㅕㅖㅗㅘㅙㅚㅛㅜㅝㅞㅟㅠㅡㅢㅣ'
-JUNGSUNG_WITH_ZERO = '0ㅏㅐㅑㅒㅓㅔㅕㅖㅗㅘㅙㅚㅛㅜㅝㅞㅟㅠㅡㅢㅣ'
 JONGSUNG = 'ㄱㄲㄳㄴㄵㄶㄷㄹㄺㄻㄼㄽㄾㄿㅀㅁㅂㅄㅅㅆㅇㅈㅊㅋㅌㅍㅎ'
 JONGSUNG_WITH_ZERO = '0ㄱㄲㄳㄴㄵㄶㄷㄹㄺㄻㄼㄽㄾㄿㅀㅁㅂㅄㅅㅆㅇㅈㅊㅋㅌㅍㅎ' # zero stands for no final consonant
 
 def change_order(order):
-    global CHOSUNG, CHOSUNG_WITH_ZERO, JUNGSUNG, JUNGSUNG_WITH_ZERO, JONGSUNG, JONGSUNG_WITH_ZERO
+    global CHOSUNG, JUNGSUNG, JONGSUNG, JONGSUNG_WITH_ZERO
     if order == 'default':
         CHOSUNG = 'ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ' 
-        CHOSUNG_WITH_ZERO = '0ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ'
         JUNGSUNG = 'ㅏㅐㅑㅒㅓㅔㅕㅖㅗㅘㅙㅚㅛㅜㅝㅞㅟㅠㅡㅢㅣ'
-        JUNGSUNG_WITH_ZERO = '0ㅏㅐㅑㅒㅓㅔㅕㅖㅗㅘㅙㅚㅛㅜㅝㅞㅟㅠㅡㅢㅣ'
         JONGSUNG = 'ㄱㄲㄳㄴㄵㄶㄷㄹㄺㄻㄼㄽㄾㄿㅀㅁㅂㅄㅅㅆㅇㅈㅊㅋㅌㅍㅎ'
         JONGSUNG_WITH_ZERO = '0ㄱㄲㄳㄴㄵㄶㄷㄹㄺㄻㄼㄽㄾㄿㅀㅁㅂㅄㅅㅆㅇㅈㅊㅋㅌㅍㅎ'
     if order == 'regular_first':
         CHOSUNG = 'ㄱㄴㄷㄹㅁㅂㅅㅇㅈㅊㅋㅌㅍㅎㄲㄸㅃㅆㅉ' 
-        CHOSUNG_WITH_ZERO = '0ㄱㄴㄷㄹㅁㅂㅅㅇㅈㅊㅋㅌㅍㅎㄲㄸㅃㅆㅉ'
         JUNGSUNG = 'ㅏㅑㅓㅕㅗㅛㅜㅠㅡㅣㅐㅒㅔㅖㅘㅙㅚㅝㅞㅟㅢ'
-        JUNGSUNG_WITH_ZERO = '0ㅏㅑㅓㅕㅗㅛㅜㅠㅡㅣㅐㅒㅔㅖㅘㅙㅚㅝㅞㅟㅢ'
         JONGSUNG = 'ㄱㄴㄷㄹㅁㅂㅅㅇㅈㅊㅋㅌㅍㅎㄲㄳㄵㄶㄺㄻㄼㄽㄾㄿㅀㅄㅆ'
         JONGSUNG_WITH_ZERO = '0ㄱㄴㄷㄹㅁㅂㅅㅇㅈㅊㅋㅌㅍㅎㄲㄳㄵㄶㄺㄻㄼㄽㄾㄿㅀㅄㅆ'
 
-def _subtitude(match):
+def _convert_matches_to_subtitude(match):
+    # :으로 구분된 문자들을 나눔 ([:ㅏㅢ:ㄶ] > '' / 'ㅏㅢ' / 'ㄶ' & [ㄴ:ㅀㄱ] > 'ㄶ' / 'ㅀㄱ')
+    first, middle, identifier, last = match.group(1), match.group(2), match.group(3), match.group(4)
+    if identifier == '':
+        # identifier가 empty string이면 last는 항상 empty string이니 따로 assert를 할 필요가 없음.
+        last = '0'
+    return _subtitude(first, middle, last)
+
+def make_korean(pattern, bracket=False):
+    compiled = compilestr(pattern)
+    return compiled[1:-1]
+
+def _subtitude(first, middle, last):
     """Subtitude mathched ko_re-specific grammars."""
-    def sub_nested(string):
+    def convert_parenthesized_string(string):
         return (
             string
             .replace('(ㅗㅏ)', 'ㅘ')
@@ -92,48 +99,53 @@ def _subtitude(match):
         )
     # print(sub_nested('(ㅗㅏ)'))
 
-    def sub_hyphen(types: str):
-        def word_type_dependent(match: re.Match):
-            pre, pro = match.group(1), match.group(2)
+    def replace_hyphen(value_range: str):
+        '''value_range 안에서 hyphen을 제거하는 고차 함수'''
+        def inner(match: re.Match):
+            '''의 구현을 위한 내부 함수'''
+            range_start, range_end = match.group(1), match.group(2)
+            assert value_range.index(range_start) <= value_range.index(range_end), f'bad character range {range_start}-{range_end}. Start of range has to be in front of end of range.'
+
             string = ''
-            assert types.index(pre) <= types.index(pro), f'bad character range {pre}-{pro}.'
-            for i in range(types.index(pre), types.index(pro) + 1):
-                string += types[i]
+            for i in range(value_range.index(range_start), value_range.index(range_end) + 1):
+                string += value_range[i]
             return string
-        return word_type_dependent
+        return inner
 
     def inverse(string, inverse_range):
         inverse_set = set(string)
         inverse_range = set(inverse_range)
-        return ''.join(sorted(list(inverse_range - inverse_set)))
+        return ''.join(sorted(inverse_range - inverse_set))
     
-    # print('!', inverse('ㄱㄲ', CHOSUNG))
-
     def makeassert(string, assert_range):
         """반복을 제거하고 assert_range안에 포함되어 있는지 확인하며 정렬한다."""
         string_set = set(string)
         assert_set = set(assert_range)
         assert string_set <= assert_set, 'assert_set에서 포함하지 않는 string이 있음.'
-        return ''.join(sorted(list(string_set)))
+        return ''.join(sorted(string_set))
 
     def combile_hangeul(first, middle, last):
         return chr(0xAC00 + 588 * CHOSUNG.index(first) + 28 * JUNGSUNG.index(middle) + JONGSUNG_WITH_ZERO.index(last))
 
-    first, middle, last = match.group(1), match.group(2), match.group(3)
+    ######################################## MAIN ########################################
 
-    # .일 경우 .을 빈칸으로 만듦.
+    # .일 경우 .을 빈칸으로 만듦. ([.:.:.] > [::])
     first = first if not first == '.' else ''
     middle = middle if not middle == '.' else ''
     last = last if not last == '.' else ''
 
-    first, middle, last = sub_nested(first), sub_nested(middle), sub_nested(last)
 
-    # 범위문을 해결(ㄱ-ㄹ > ㄱㄲㄴㄷㄸㄹ)
-    first = re.sub('(.)-(.)', sub_hyphen(CHOSUNG_WITH_ZERO), first)
-    middle = re.sub('(.)-(.)', sub_hyphen(JUNGSUNG_WITH_ZERO), middle)
-    last = re.sub('(.)-(.)', sub_hyphen(JONGSUNG_WITH_ZERO), last)
+    # convert parenthesized string ((ㅡㅣ) > ㅢ)
+    first, middle, last = map(convert_parenthesized_string, (first, middle, last))
 
-    # 0이 first나 middle에서 혼자 쓰였는지 확인
+
+    # 범위문을 실제 문자로 변경 (ㄱ-ㄹ > ㄱㄲㄴㄷㄸㄹ)
+    first = re.sub('(.)-(.)', replace_hyphen(CHOSUNG), first)
+    middle = re.sub('(.)-(.)', replace_hyphen(JUNGSUNG), middle)
+    last = re.sub('(.)-(.)', replace_hyphen(JONGSUNG_WITH_ZERO), last)
+
+
+    # 0이 first나 middle에서 혼자 쓰였는지 확인(first나 middle에서는 0이 쓰였다면 혼자 쓰여야 함.) ([0::] : OK, [0ㄱ::] : ERROR)
     if '0' in first:
         assert first == '0', '0 in first consonant letter only can used alone.'
     if '0' in middle:
@@ -143,8 +155,8 @@ def _subtitude(match):
     # [0:~]이나 [~:0:~]을 해결
     # to test: [0:^ㅣ:0], [0:ㅓㅐ:0]
     if first == '0':
-        assert middle != '0' or last != '0', 'invaild case([0:0:0]), cannot compose this case.'
-        assert not (middle != '0' and last != '0'), 'invaild case([0:*:*]), cannot compose this case.'
+        assert middle != '0' or last != '0', 'invaild case([0:0:0]), cannot compile this case.'
+        assert not (middle != '0' and last != '0'), 'invaild case([0:*:*]), cannot compile this case.'
 
         if middle != '0':
             if middle == '':
@@ -154,14 +166,15 @@ def _subtitude(match):
             return f'[{makeassert(middle, JUNGSUNG)}]'
     else:
         if middle == '0':
-            assert last == '0', 'invaild case([*:0:*]), cannot compose this case.'
+            assert last == '0', 'invaild case([*:0:*]), cannot compile this case.'
 
             if first == '':
                 return f'[{CHOSUNG}]'
             if first[0] == '^':
                 return f'[{inverse(first, CHOSUNG)}]'
             return f'[{makeassert(first, CHOSUNG)}]'
-    
+
+
     # 일반 구문([*:*:*0]) 분석
     if '^' if first == '' else first[0] == '^':
         first = inverse(first, CHOSUNG)
@@ -170,6 +183,8 @@ def _subtitude(match):
     if '^' if last == '' else last[0] == '^':
         last = inverse(last, JONGSUNG_WITH_ZERO) # with_zero로 할지 아니면 그냥으로 할지 결정하기
 
+
+    # 실제 한글 쌍 제작([ㄱ:ㅏ:ㄴㄷ] > [간갇])
     return_value = ''
     for first_one in makeassert(first, CHOSUNG):
         for middle_one in makeassert(middle, JUNGSUNG):
@@ -177,18 +192,45 @@ def _subtitude(match):
                 # print(first_one, middle_one, last_one)
                 return_value += combile_hangeul(first_one, middle_one, last_one)
 
+
     # print(first, middle, last, sep='/')
     # return f'[{first}:{middle}:{last}]'
     return f'[{return_value}]'
 
 def compilestr(pattern):
     """Make string to complied."""
-    # Replace things like "[ㄱ:ㅣ-ㅗ]" to "[ㄱ:ㅣ-ㅗ:0]".
-    pattern = re.sub(r'\[([0ㄱ-ㅎ()^-]*|\.*:[0ㅏ-ㅣ.()^-]*)\]', '[\g<1>:0]', pattern)
-    # Replace things like "[ㄱ:ㅣ-ㅗ:0]" to [가개걔거게겨계고], MAIN WORKER
-    pattern = re.sub(r'\[([0ㄱ-ㅎ()^-]*|\.*):([0ㅏ-ㅣ.()^-]*):([ㄱ-ㅎ0.()^-]*)\]', _subtitude, pattern)
+    pattern = re.sub(r'\[([0ㄱ-ㅎㅏ-ㅣ\^.()-]*):([0ㄱ-ㅎㅏ-ㅣ\^.()-]*)(:?)([0ㄱ-ㅎㅏ-ㅣ\^.()-]*)\]', _convert_matches_to_subtitude, pattern)
     return pattern # Compile by re and return.
 
 def compile(pattern, flags=0):
     """Complie ko_re by re."""
     return re.compile(compilestr(pattern), flags)
+
+if __name__ == "__main__":
+    # assert '[하히]' == compilestr('[ㅎ:ㅏㅣ]'), "test ability to compile [:] literal."
+    # assert '[가까나다따라마바빠사싸아자짜차카타파하]' == compilestr('[.:ㅏ]'), "test ability to remove '.'."
+    # assert '[궪궭긚긝]' == compilestr('[ㄱ:(ㅡㅣ)(ㅜㅔ):(ㄴㅎ)(ㄹㄱ)]'), "to test convert_parenthesized_string() function."
+    # try:
+    #     compilestr('[ㄹ-ㄱ:]')
+    # except AssertionError:
+    #     pass
+    # else:
+    #     raise AssertionError('replace_hyphen failed.')
+    # assert compilestr('[ㄱ-ㄸ:ㅏ-ㅐ:ㄱ-ㄴ]') == '[각갂갃간객갞갟갠깍깎깏깐깩깪깫깬낙낚낛난낵낶낷낸닥닦닧단댁댂댃댄딱딲딳딴땍땎땏땐]', "to test replace_hyphen."
+
+    # print(subtitude('ㅎ', 'ㅣㅏㅓㅛㅐ', 'ㄴ'))
+    # print(compilestr('[::]'))
+
+    import cProfile
+    import pstats
+
+    with cProfile.Profile() as pr:
+        for _ in range(1000):
+            compilestr('[ㄱ-ㄸ:ㅏ-ㅐ:ㄱ-ㄴ]')
+    
+    stats = pstats.Stats(pr)
+    stats.sort_stats(pstats.SortKey.TIME)
+    # stats.print_stats()
+    stats.dump_stats(filename='prof.prof')
+
+    # print(make_korean('[ㄱ-ㄸ:ㅏ-ㅐ:ㄱ-ㄴ]'))
