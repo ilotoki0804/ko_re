@@ -2,7 +2,7 @@
 
 ADD 
 TODO: 주석이나 re.X 고려하기
-TODO: change_order 대신 flag로 변경하기
+TODO: change_order 대신 flag로 변경하기 (ko_re.C)
 
 unicode order: 
 ㄱㄲㄳㄴㄵㄶㄷㄸㄹㄺㄻㄼㄽㄾㄿㅀㅁㅂㅃㅄㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎㅏㅐㅑㅒㅓㅔㅕㅖㅗㅘㅙㅚㅛㅜㅝㅞㅟㅠㅡㅢㅣ
@@ -39,10 +39,11 @@ unicode order:
         [*:0:0] > CHOSUNG
         [0:*:*] > X
         [0:*:0] > JUNGSUNG
-        [0:0:*] > JONGSUNG
+        [0:0:*] > JONGSUNG_WITH_ZERO
         [0:0:0] > X
 """
 import re
+from typing import Iterable
 
 CHOSUNG = 'ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ' 
 JUNGSUNG = 'ㅏㅐㅑㅒㅓㅔㅕㅖㅗㅘㅙㅚㅛㅜㅝㅞㅟㅠㅡㅢㅣ'
@@ -72,9 +73,12 @@ def _convert_matches_to_subtitude(match):
 
 def make_korean(pattern, bracket=False):
     compiled = compilestr(pattern)
-    return compiled[1:-1]
+    if bracket:
+        return compiled
+    else:
+        return compiled[1:-1]
 
-def _subtitude(first, middle, last):
+def _subtitude(first: str, middle: str, last: str):
     """Subtitude mathched ko_re-specific grammars."""
     def convert_parenthesized_string(string):
         return (
@@ -112,19 +116,19 @@ def _subtitude(first, middle, last):
             return string
         return inner
 
-    def inverse(string, inverse_range):
+    def inverse(string: Iterable, inverse_range: Iterable):
         inverse_set = set(string)
         inverse_range = set(inverse_range)
         return ''.join(sorted(inverse_range - inverse_set))
     
-    def makeassert(string, assert_range):
+    def remove_duplicate(string: Iterable, assert_range: Iterable):
         """반복을 제거하고 assert_range안에 포함되어 있는지 확인하며 정렬한다."""
         string_set = set(string)
         assert_set = set(assert_range)
         assert string_set <= assert_set, 'assert_set에서 포함하지 않는 string이 있음.'
         return ''.join(sorted(string_set))
 
-    def combile_hangeul(first, middle, last):
+    def combile_hangeul(first: str, middle: str, last: str):
         return chr(0xAC00 + 588 * CHOSUNG.index(first) + 28 * JUNGSUNG.index(middle) + JONGSUNG_WITH_ZERO.index(last))
 
     ######################################## MAIN ########################################
@@ -153,7 +157,6 @@ def _subtitude(first, middle, last):
 
 
     # [0:~]이나 [~:0:~]을 해결
-    # to test: [0:^ㅣ:0], [0:ㅓㅐ:0]
     if first == '0':
         assert middle != '0' or last != '0', 'invaild case([0:0:0]), cannot compile this case.'
         assert not (middle != '0' and last != '0'), 'invaild case([0:*:*]), cannot compile this case.'
@@ -163,7 +166,7 @@ def _subtitude(first, middle, last):
                 return f'[{JUNGSUNG}]'
             if middle[0] == '^':
                 return f'[{inverse(middle, JUNGSUNG)}]'
-            return f'[{makeassert(middle, JUNGSUNG)}]'
+            return f'[{remove_duplicate(middle, JUNGSUNG)}]'
     else:
         if middle == '0':
             assert last == '0', 'invaild case([*:0:*]), cannot compile this case.'
@@ -172,7 +175,7 @@ def _subtitude(first, middle, last):
                 return f'[{CHOSUNG}]'
             if first[0] == '^':
                 return f'[{inverse(first, CHOSUNG)}]'
-            return f'[{makeassert(first, CHOSUNG)}]'
+            return f'[{remove_duplicate(first, CHOSUNG)}]'
 
 
     # 일반 구문([*:*:*0]) 분석
@@ -186,9 +189,9 @@ def _subtitude(first, middle, last):
 
     # 실제 한글 쌍 제작([ㄱ:ㅏ:ㄴㄷ] > [간갇])
     return_value = ''
-    for first_one in makeassert(first, CHOSUNG):
-        for middle_one in makeassert(middle, JUNGSUNG):
-            for last_one in makeassert(last, JONGSUNG_WITH_ZERO):
+    for first_one in remove_duplicate(first, CHOSUNG):
+        for middle_one in remove_duplicate(middle, JUNGSUNG):
+            for last_one in remove_duplicate(last, JONGSUNG_WITH_ZERO):
                 # print(first_one, middle_one, last_one)
                 return_value += combile_hangeul(first_one, middle_one, last_one)
 
@@ -207,30 +210,33 @@ def compile(pattern, flags=0):
     return re.compile(compilestr(pattern), flags)
 
 if __name__ == "__main__":
-    # assert '[하히]' == compilestr('[ㅎ:ㅏㅣ]'), "test ability to compile [:] literal."
-    # assert '[가까나다따라마바빠사싸아자짜차카타파하]' == compilestr('[.:ㅏ]'), "test ability to remove '.'."
-    # assert '[궪궭긚긝]' == compilestr('[ㄱ:(ㅡㅣ)(ㅜㅔ):(ㄴㅎ)(ㄹㄱ)]'), "to test convert_parenthesized_string() function."
-    # try:
-    #     compilestr('[ㄹ-ㄱ:]')
-    # except AssertionError:
-    #     pass
-    # else:
-    #     raise AssertionError('replace_hyphen failed.')
-    # assert compilestr('[ㄱ-ㄸ:ㅏ-ㅐ:ㄱ-ㄴ]') == '[각갂갃간객갞갟갠깍깎깏깐깩깪깫깬낙낚낛난낵낶낷낸닥닦닧단댁댂댃댄딱딲딳딴땍땎땏땐]', "to test replace_hyphen."
+    assert '[하히]' == compilestr('[ㅎ:ㅏㅣ]'), "test ability to compile [:] literal."
+    assert '[가까나다따라마바빠사싸아자짜차카타파하]' == compilestr('[.:ㅏ]'), "test ability to remove '.'."
+    assert '[궪궭긚긝]' == compilestr('[ㄱ:(ㅡㅣ)(ㅜㅔ):(ㄴㅎ)(ㄹㄱ)]'), "to test convert_parenthesized_string() function."
+    try:
+        compilestr('[ㄹ-ㄱ:]')
+    except AssertionError:
+        pass
+    else:
+        raise AssertionError('replace_hyphen failed.')
+    assert compilestr('[ㄱ-ㄸ:ㅏ-ㅐ:ㄱ-ㄴ]') == '[각갂갃간객갞갟갠깍깎깏깐깩깪깫깬낙낚낛난낵낶낷낸닥닦닧단댁댂댃댄딱딲딳딴땍땎땏땐]', "to test replace_hyphen."
+    try:
+        compilestr('[0ㄱ:]')
+    except AssertionError:
+        pass
+    else:
+        raise AssertionError('0-assertion for start failed.')
+    try:
+        compilestr('[:ㅣ0]')
+    except AssertionError:
+        pass
+    else:
+        raise AssertionError('0-assertion for middle failed.')
+    assert compilestr('[0:ㅓㅐ:0]') == '[ㅐㅓ]', 'test for middle alone failed.'
+    assert compilestr('[0:^ㅣ:0]') == '[ㅏㅐㅑㅒㅓㅔㅕㅖㅗㅘㅙㅚㅛㅜㅝㅞㅟㅠㅡㅢ]', 'test for middle alone with ^ failed.'
 
-    # print(subtitude('ㅎ', 'ㅣㅏㅓㅛㅐ', 'ㄴ'))
-    # print(compilestr('[::]'))
+    print(_subtitude('ㅎ', 'ㅣㅏㅓㅛㅐ', 'ㄴ'))
+    print(compilestr('[::]'))
 
-    import cProfile
-    import pstats
 
-    with cProfile.Profile() as pr:
-        for _ in range(1000):
-            compilestr('[ㄱ-ㄸ:ㅏ-ㅐ:ㄱ-ㄴ]')
-    
-    stats = pstats.Stats(pr)
-    stats.sort_stats(pstats.SortKey.TIME)
-    # stats.print_stats()
-    stats.dump_stats(filename='prof.prof')
-
-    # print(make_korean('[ㄱ-ㄸ:ㅏ-ㅐ:ㄱ-ㄴ]'))
+    print(make_korean('[ㄱ-ㄸ:ㅏ-ㅐ:ㄱ-ㄴ]'))
