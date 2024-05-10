@@ -107,6 +107,6 @@ ko_re.change_order('default') # 기본값(사전순)
 
 ## release note
 
-0.0.5: make_korean 추가, 이름 변경, 타입 추가, 리팩토링, 검사 추가
-0.0.4: readme 보강, 리팩토링
-0.0.3(첫 안정화 버전): ko_re 시작.
+* 0.0.5: make_korean 추가, 이름 변경, 타입 추가, 리팩토링, 검사 추가
+* 0.0.4: readme 보강, 리팩토링
+* 0.0.3(첫 안정화 버전): ko_re 시작.
