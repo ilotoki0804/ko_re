@@ -28,7 +28,7 @@ fn compilestr(pattern: &str, order: Option<&str>) -> PyResult<String> {
 
 /// A Python module implemented in Rust.
 #[pymodule]
-fn _core(_py: Python, m: &PyModule) -> PyResult<()> {
-    m.add_function(wrap_pyfunction!(compilestr, m)?)?;
+fn _core(module: &Bound<'_, PyModule>) -> PyResult<()> {
+    module.add_function(wrap_pyfunction!(compilestr, module)?)?;
     Ok(())
 }
