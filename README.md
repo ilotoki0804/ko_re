@@ -99,13 +99,23 @@ print(kre.make_korean('[::ㄴ]'))
 ```python
 import kre
 
-kre.compile("[ㄱ-ㅎ:ㅏ]", "regular_first") # 선행 자모순
-kre.compile("[ㄱ-ㅎ:ㅏ]", "default") # 기본값(사전순)
+kre.compile("[ㄱ-ㅎ:ㅏ]", order="regular_first") # 선행 자모순
+kre.compile("[ㄱ-ㅎ:ㅏ]", order="default") # 기본값(사전순)
+```
+
+정규표현식 플래그가 더 먼저 오기 때문에 주의해야 합니다.
+
+```python
+import kre
+
+kre.compile("[ㄱ-ㅎ:ㅏ]", "regular_first") # XXX 오류! 정규표현식 flag로 처리됨
+kre.compile("[ㄱ-ㅎ:ㅏ]", order="default") # 올바른 사용
 ```
 
 ## release note
 
-* 0.1.0: 러스트 바인딩으로 완전히 처음부터 재제작, 기존 버전과 완전히 다름.
+* 0.2.0: `order` 파라미터 추가
+* 0.1.0: 러스트 바인딩으로 완전히 처음부터 재제작, 기존 버전과 완전히 다름
 * 0.0.5: make_korean 추가, 이름 변경, 타입 추가, 리팩토링, 검사 추가
 * 0.0.4: readme 보강, 리팩토링
 * 0.0.3(첫 안정화 버전): 시작
