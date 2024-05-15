@@ -3,13 +3,12 @@ from __future__ import annotations
 import enum
 import functools
 import re as _re
-from re import Match, Pattern, escape
+from re import Match, Pattern, RegexFlag, escape
 from typing import Callable
 
 from ._core import compilestr
 
 # fmt: off
-# ruff: noqa: F822
 __all__ = [
     "match", "fullmatch", "search", "sub", "subn", "split",
     "findall", "finditer", "compile", "escape",
@@ -20,21 +19,16 @@ __all__ = [
 # fmt: on
 
 
-@enum.global_enum
-@enum._simple_enum(enum.IntFlag, boundary=enum.KEEP)
-class RegexFlag:
-    NOFLAG = 0
-    ASCII = A = _re.ASCII.value
-    IGNORECASE = I = _re.IGNORECASE.value  # noqa: E741
-    LOCALE = L = _re.LOCALE.value
-    UNICODE = U = _re.UNICODE.value
-    MULTILINE = M = _re.MULTILINE.value
-    DOTALL = S = _re.DOTALL.value
-    VERBOSE = X = _re.VERBOSE.value
-    TEMPLATE = T = _re.TEMPLATE.value
-    DEBUG = _re.DEBUG.value
-    __str__ = object.__str__
-    _numeric_repr_ = hex
+NOFLAG = 0
+ASCII = A = _re.ASCII
+IGNORECASE = I = _re.IGNORECASE  # noqa: E741
+LOCALE = L = _re.LOCALE
+UNICODE = U = _re.UNICODE
+MULTILINE = M = _re.MULTILINE
+DOTALL = S = _re.DOTALL
+VERBOSE = X = _re.VERBOSE
+TEMPLATE = T = _re.TEMPLATE
+DEBUG = _re.DEBUG
 
 
 # --------------------------------------------------------------------
@@ -81,7 +75,7 @@ def subn(pattern: str, repl: str | Callable[[Match[str]], str], string: str, cou
     return _compile(pattern, flags).subn(repl, string, count)
 
 
-def split(pattern: str, string: str, maxsplit=0, flags: RegexFlag = 0):
+def split(pattern: str, string: str, maxsplit=0, flags: int | RegexFlag = 0):
     """Split the source string by the occurrences of the pattern,
     returning a list containing the resulting substrings.  If
     capturing parentheses are used in pattern, then the text of all
@@ -117,5 +111,8 @@ def compile(pattern: str, flags: int | RegexFlag = 0):
 
 
 @functools.cache  # Simple caching. You should use `compile` if you want performance.
-def _compile(pattern: str, flags):
-    return _re.compile(compilestr(pattern))
+def _compilestr_cached(pattern) -> str:
+    return compilestr(pattern)
+
+def _compile(pattern: str, flags: int | RegexFlag = 0):
+    return _re.compile(_compilestr_cached(pattern), flags)
