@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import enum
 import functools
 import re as _re
 from re import Match, Pattern, RegexFlag, escape
