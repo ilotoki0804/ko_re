@@ -55,7 +55,9 @@ def search(pattern: str, string: str, flags: int | RegexFlag = 0, order: OrderTy
     return _compile(pattern, flags, order).search(string)
 
 
-def sub(pattern: str, repl: str | Callable[[Match[str]], str], string: str, count: int = 0, flags=0, order: OrderType = None):
+def sub(
+    pattern: str, repl: str | Callable[[Match[str]], str], string: str, count: int = 0, flags=0, order: OrderType = None
+):
     """Return the string obtained by replacing the leftmost
     non-overlapping occurrences of the pattern in string by the
     replacement repl.  repl can be either a string or a callable;
@@ -65,7 +67,9 @@ def sub(pattern: str, repl: str | Callable[[Match[str]], str], string: str, coun
     return _compile(pattern, flags, order).sub(repl, string, count)
 
 
-def subn(pattern: str, repl: str | Callable[[Match[str]], str], string: str, count: int = 0, flags=0, order: OrderType = None):
+def subn(
+    pattern: str, repl: str | Callable[[Match[str]], str], string: str, count: int = 0, flags=0, order: OrderType = None
+):
     """Return a 2-tuple containing (new_string, number).
     new_string is the string obtained by replacing the leftmost
     non-overlapping occurrences of the pattern in the source
@@ -115,6 +119,7 @@ def compile(pattern: str, flags: int | RegexFlag = 0, order: OrderType = None):
 @functools.cache  # Simple caching. You should use `compile` if you want performance.
 def _compilestr_cached(pattern: str, order: OrderType = None):
     return compilestr(pattern, order)
+
 
 def _compile(pattern: str, flags: int | RegexFlag = 0, order: OrderType = None):
     return _re.compile(_compilestr_cached(pattern, order), flags)
