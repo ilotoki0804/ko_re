@@ -114,9 +114,5 @@ def compile(pattern: str, flags: int | RegexFlag = 0, order: OrderType = None):
 
 
 @functools.cache  # Simple caching. You should use `compile` if you want performance.
-def _compilestr_cached(pattern: str, order: OrderType = None):
-    return compilestr(pattern, order)
-
-
 def _compile(pattern: str, flags: int | RegexFlag = 0, order: OrderType = None):
-    return _re.compile(_compilestr_cached(pattern, order), flags)
+    return _re.compile(compilestr(pattern, order), flags)
