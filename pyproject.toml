@@ -9,8 +9,24 @@ classifiers = [
     "Programming Language :: Rust",
     "Programming Language :: Python :: Implementation :: CPython",
     "Programming Language :: Python :: Implementation :: PyPy",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Natural Language :: Korean",
+    "Typing :: Typed",
 ]
 dynamic = ["version"]
+authors = [{name = "ilotoki0804", email = "ilotoki0804@gmail.com"}]
+license = {file = "LICENSE"}
+readme = "README.md"
+description = "Regex for Korean"
+keywords = ["regex", "korean"]
+
+[project.urls]
+Source = "https://github.com/ilotoki0804/korean-regex"
+Tracker = "https://github.com/ilotoki0804/korean-regex/issues"
+Funding = "https://toss.me/ilotoki"
 
 [tool.maturin]
 features = ["pyo3/extension-module"]
