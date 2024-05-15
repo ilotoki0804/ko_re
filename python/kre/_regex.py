@@ -26,8 +26,6 @@ UNICODE = U = _re.UNICODE
 MULTILINE = M = _re.MULTILINE
 DOTALL = S = _re.DOTALL
 VERBOSE = X = _re.VERBOSE
-TEMPLATE = T = _re.TEMPLATE
-DEBUG = _re.DEBUG
 
 OrderType = Literal["default", "regular_first"] | None
 
