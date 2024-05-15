@@ -53,7 +53,7 @@ def search(pattern: str, string: str, flags: int | RegexFlag = 0, order: OrderTy
 
 
 def sub(
-    pattern: str, repl: str | Callable[[Match[str]], str], string: str, count: int = 0, flags=0, order: OrderType = None
+    pattern: str, repl: str | Callable[[Match[str]], str], string: str, count: int = 0, flags: int | RegexFlag = 0, order: OrderType = None
 ):
     """Return the string obtained by replacing the leftmost
     non-overlapping occurrences of the pattern in string by the
@@ -65,7 +65,7 @@ def sub(
 
 
 def subn(
-    pattern: str, repl: str | Callable[[Match[str]], str], string: str, count: int = 0, flags=0, order: OrderType = None
+    pattern: str, repl: str | Callable[[Match[str]], str], string: str, count: int = 0, flags: int | RegexFlag = 0, order: OrderType = None
 ):
     """Return a 2-tuple containing (new_string, number).
     new_string is the string obtained by replacing the leftmost
@@ -78,7 +78,7 @@ def subn(
     return _compile(pattern, flags, order).subn(repl, string, count)
 
 
-def split(pattern: str, string: str, maxsplit=0, flags: int | RegexFlag = 0, order: OrderType = None):
+def split(pattern: str, string: str, maxsplit: int = 0, flags: int | RegexFlag = 0, order: OrderType = None):
     """Split the source string by the occurrences of the pattern,
     returning a list containing the resulting substrings.  If
     capturing parentheses are used in pattern, then the text of all
